@@ -1,61 +1,44 @@
-clc; clear all; close all;
+% Derive Equation from Second order Derivative
+% d^2 / dx (T) = 0
 
-% Define Parameters
-n_point = 101;
+clear all;
+close all;
+clc;
+
+% Define Parameters Mesh
+n_point = 5;
 dom_size = 1;
 h = dom_size / (n_point - 1);
-x = 0:h:length(dom_size);
 
-phi(1) = 10;       % Phi zero
-phi(n_point) = 20;
-phi_new(1) = 10;
-phi_new(n_point) = 20;
+% Innitailising & Boundary Condition
+y(1) = 0;
+y(n_point) = 1;
 
-% Piglet Number
-rho = 1;
-u = 1;
-gamma = 1;
+y_new(1) = 0;
+y_new(n_point) = 1;
 
-P = (u * rho * dom_size) / gamma;
+error_req = 1e-6;
+error_mag = 1;
+iteration = 1;
 
-% Exact Solution
+% Calculation
 
-phi_exact = phi(1) + (phi(n_point) - phi(1)) .* exp(P * (x/dom_size) -1) ./ (exp(P) - 1);
-
-figure;
-scatter(x, phi_exact)
-xlabel("x")
-ylabel("Phi")
-
-% Scheme with Numerical Iterative
-% F = rho x u
-% D = gamma / delta(x)
-% a_P x phi_P = (a_E x phi_E) + (a_W x phi_W) 
-
-error = 1;
-error_req = 1e-7;
-iteration = 0;
-
-while error > error_req
-    for i  = 2:(n_point - 1)
-        a_E = gamma / h - (rho * u/2);
-        a_W = gamma / h + (rho * u/2);
-        a_P = (rho * u/2) - (rho * u/2) + (gamma / h) + (gamma / h);
-
-        % Discretize Finite Volume
-        phi_new(i) = (a_E * phi(i+1) - a_W * phi(i-1)) / a_P;
+while error_mag > error_req
+    for i = 2 : (n_point - 1)
+        y_new(i) = 0.5 .* (y(i-1) + y(i+1));
+        iteration = iteration + 1;
     end
 
-    iteration = iteration + 1;
-    error = 0;
+    error_mag = 0;
 
-    for i = 2:(n_point - 1)
-        error = error + abs(phi(i) - phi_new(i));
+    for i = 2 : (n_point - 1)
+        error_mag = error_mag + abs(y_new(i) - y(i));
     end
 
-    phi = phi_new;
+    y = y_new;
 end
 
 % Plotting
 
-plot(x, phi)
+x_dom = ((1:n_point) - 1) .* h;
+figure; plot(x_dom, y)
