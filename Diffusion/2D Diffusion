@@ -1,1 +1,46 @@
+% Equation
+% d^2 / dx (T) + d^2 / dy (T) = 0
 
+% Define Parameters Mesh
+n_point = 51;
+dom_size = 1;
+h = dom_size / (n_point - 1);
+
+% Innitailising & Boundary Condition
+y(n_point, n_point) = 0;
+y(1,:) = 1; % Defined Boundary at Top surface is 1
+
+y_new(n_point, n_point) = 0;
+y_new(1,:) = 1;
+
+error_mag = 1;
+error_req = 1e-6;
+iteration = 0;
+
+% Calculation
+
+while error_mag > error_req
+    for i = 2:(n_point - 1)
+        for j = 2:(n_point-1)
+            y_new(i,j) = 0.25 .* (y_new(i-1,j) + y(i+1,j) + y_new(i,j-1) + y(i,j+1));
+            iteration = iteration + 1;
+        end
+    end
+
+    error_mag = 0;
+    for i =2:(n_point - 1)
+        for j = 2:(n_point - 1)
+            error_mag = error_mag + abs(y(i,j) - y_new(i,j));
+        end
+    end
+
+    y = y_new; % Update the old values with the new values
+end
+     
+% Plotting
+
+x_dom = ((1:n_point)-1) .* h;
+y_dom = 1 - ((1:n_point)-1) .*h;
+[X, Y] = meshgrid(x_dom, y_dom);
+contourf(X, Y, y,12)
+colorbar
